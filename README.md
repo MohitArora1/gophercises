@@ -1,5 +1,7 @@
 # gophercises
+```
 gophercises is exercises for golang
-in this repository you can find different type of project from gophercises.
-or you can go to gophercises exercises by this link
-https://gophercises.com/exercises
+In this repository i am covering the gophsercises number 7 and 18
+You can see all the exercises of gophercesis
+[gophsercises](https://gophercises.com/exercises)
+```
