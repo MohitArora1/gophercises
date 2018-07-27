@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -13,9 +10,7 @@ var rootCmd = &cobra.Command{
 	Long:  `With task command you can add task to your todo list do the task and view all the task`,
 }
 
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+// Execute is used to add command under root command
+func Execute() error {
+	return rootCmd.Execute()
 }

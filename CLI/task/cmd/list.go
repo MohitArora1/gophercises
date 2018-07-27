@@ -18,10 +18,10 @@ var listCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		tasks, err := repository.ReadNotCompletedTaskFromDB()
 		if err != nil {
-			panic(err)
+			fmt.Print("\nNo task found")
 		}
 		for i, task := range tasks {
-			fmt.Printf("%d. %v \n", i+1, task)
+			fmt.Printf("%d. %v\n", i+1, task)
 		}
 	},
 }

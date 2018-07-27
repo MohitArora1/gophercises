@@ -19,7 +19,8 @@ var addCmd = &cobra.Command{
 		task := strings.Join(args, " ")
 		_, err := repository.InsertIntoDB(task)
 		if err != nil {
-			panic(err)
+			fmt.Println("Not able to add task to todo")
+			return
 		}
 		fmt.Printf("Added \"%s\" \n", task)
 	},
