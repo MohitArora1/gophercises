@@ -1,7 +1,16 @@
 package main
 
-import "github.com/MohitArora1/gophercises/secret/cmd"
+import (
+	"fmt"
+	"os"
+
+	"github.com/MohitArora1/gophercises/secret/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	err := cmd.Execute()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }

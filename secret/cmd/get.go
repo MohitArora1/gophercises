@@ -3,7 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/MohitArora1/gophercises/secret/cipher"
+	"github.com/MohitArora1/gophercises/secret/vault"
+
 	"github.com/spf13/cobra"
 )
 
@@ -12,16 +13,13 @@ var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "get command will return api key from secrets",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("get called")
-		hex, err := cipher.Encrypt(args[0], args[1])
+		v := vault.GetVault(encodingKey, secretsPath())
+		value, err := v.Get(args[0])
 		if err != nil {
-			panic(err)
+			fmt.Printf("%v\n", err.Error())
+			return
 		}
-		value, err := cipher.Decrypt(args[0], hex)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("value is %s\n", value)
+		fmt.Println(value)
 	},
 }
 
