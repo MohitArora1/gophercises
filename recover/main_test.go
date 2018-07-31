@@ -58,10 +58,10 @@ func TestDebugAPI(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := http.DefaultClient.Do(tt.r)
-			defer resp.Body.Close()
 			if err != nil {
 				t.Fatal(err)
 			}
+			defer resp.Body.Close()
 			if resp.StatusCode != tt.status {
 				t.Error("error in debug api")
 			}

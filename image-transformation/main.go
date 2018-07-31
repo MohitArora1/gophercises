@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -49,7 +48,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 func uploadHandle(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("image")
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	defer file.Close()
 	ext := filepath.Ext(header.Filename)[1:]
@@ -191,13 +190,18 @@ func tempfile(prefix, ext string) (*os.File, error) {
 	return os.Create(fmt.Sprintf("%s.%s", in.Name(), ext))
 }
 
-// this is main function we defined all the router here
-func main() {
+// getHandlers will return the router mux with handlers
+func getHandlers() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", index)
 	mux.HandleFunc("/upload", uploadHandle)
 	fs := http.FileServer(http.Dir("./img/"))
 	mux.Handle("/img/", http.StripPrefix("/img", fs))
 	mux.HandleFunc("/modify/", modifyHandle)
-	http.ListenAndServe(":8000", mux)
+	return mux
+}
+
+// this is main function we defined all the router here
+func main() {
+	http.ListenAndServe(":8000", getHandlers())
 }

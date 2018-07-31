@@ -1,4 +1,4 @@
-// this package will perform the transform operations on image
+// Package transform package will perform the transform operations on image
 package transform
 
 import (
@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// this function will transform the image first it will create two file
+// Transform function will transform the image first it will create two file
 // input file and output file the then call the primitive function which
 // actualy trasform the image and this function return io.Reader and error
 func Transform(image io.Reader, ext, mode, number string) (io.Reader, error) {

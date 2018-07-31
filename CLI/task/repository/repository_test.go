@@ -18,6 +18,10 @@ func TestInsertIntoDB(t *testing.T) {
 	if err != nil {
 		t.Errorf("error in inserting data")
 	}
+	_, err = InsertIntoDB("go to gym")
+	if err == nil {
+		t.Errorf("error in inserting data")
+	}
 }
 
 func TestReadNotCompletedTaskFromDB(t *testing.T) {
@@ -34,5 +38,11 @@ func TestMarkTaskAsDone(t *testing.T) {
 	_, err := MarkTaskAsDone(ids)
 	if err != nil {
 		t.Error("error in doing task")
+	}
+}
+
+func TestInit(t *testing.T) {
+	if err := Init("home/m/task1.db"); err == nil {
+		t.Error("error")
 	}
 }

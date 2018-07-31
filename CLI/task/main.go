@@ -13,7 +13,10 @@ import (
 func main() {
 	home, _ := homedir.Dir()
 	dbPath := filepath.Join(home, "tasks.db")
-	repository.Init(dbPath)
+	if err := repository.Init(dbPath); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	err := cmd.Execute()
 	if err != nil {
 		fmt.Println(err)

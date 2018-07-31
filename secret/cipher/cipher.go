@@ -13,10 +13,7 @@ import (
 
 // Encrypt will encrypt the key
 func Encrypt(key, plaintext string) (string, error) {
-	block, err := newCipherBlock(key)
-	if err != nil {
-		return "", err
-	}
+	block, _ := newCipherBlock(key)
 
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext[:aes.BlockSize]
@@ -33,9 +30,6 @@ func Encrypt(key, plaintext string) (string, error) {
 // Decrypt will decrypt the key value
 func Decrypt(key, cipherHex string) (string, error) {
 	block, err := newCipherBlock(key)
-	if err != nil {
-		return "", err
-	}
 
 	ciphertext, err := hex.DecodeString(cipherHex)
 	if err != nil {

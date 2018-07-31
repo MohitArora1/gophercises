@@ -3,8 +3,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
-	"os"
 
 	// using this package as a driver for sqlite3
 	_ "github.com/mattn/go-sqlite3"
@@ -14,21 +12,19 @@ var db *sql.DB
 
 // Init function used to initialized the db
 // as well create table if not created.
-func Init(dbPath string) {
+func Init(dbPath string) error {
 	var err error
 
 	db, err = sql.Open("sqlite3", dbPath)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 
 	_, err = db.Exec("create table if not exists tasks(task text primary key)")
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
-
+	return nil
 }
 
 // InsertIntoDB function used to insert the task into db
