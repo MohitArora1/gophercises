@@ -26,13 +26,15 @@ var doCmd = &cobra.Command{
 
 		}
 		notExist, err := repository.MarkTaskAsDone(ids)
-		if err != nil {
-			fmt.Printf("\nnot able to do task\n")
-		} else if len(notExist) >= 1 {
-			fmt.Printf("\n%v these ids not exist and rest mark as done\n", notExist)
-		} else {
-			fmt.Println("done tasks")
+		msg := "Not able to mark task as done"
+		if err == nil {
+			if len(notExist) >= 1 {
+				msg = fmt.Sprintf("\n%v these ids not exist and rest mark as done\n", notExist)
+			} else {
+				msg = fmt.Sprintln("done tasks")
+			}
 		}
+		fmt.Println(msg)
 	},
 }
 

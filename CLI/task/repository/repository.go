@@ -16,15 +16,10 @@ func Init(dbPath string) error {
 	var err error
 
 	db, err = sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return err
+	if err == nil {
+		_, err = db.Exec("create table if not exists tasks(task text primary key)")
 	}
-
-	_, err = db.Exec("create table if not exists tasks(task text primary key)")
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 // InsertIntoDB function used to insert the task into db
@@ -45,19 +40,17 @@ func ReadNotCompletedTaskFromDB() ([]string, error) {
 	var tasks []string
 	var task string
 	stmt, err := db.Prepare("select task from tasks")
-	if err != nil {
-		return tasks, err
+	if err == nil {
+		rows, err := stmt.Query()
+		if err == nil {
+			defer rows.Close()
+			for rows.Next() {
+				rows.Scan(&task)
+				tasks = append(tasks, task)
+			}
+		}
 	}
-	rows, err := stmt.Query()
-	if err != nil {
-		return tasks, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		rows.Scan(&task)
-		tasks = append(tasks, task)
-	}
-	return tasks, nil
+	return tasks, err
 }
 
 // MarkTaskAsDone function remove the task from db
@@ -65,26 +58,21 @@ func ReadNotCompletedTaskFromDB() ([]string, error) {
 func MarkTaskAsDone(ids []int) ([]int, error) {
 	var notExist []int
 	tasks, err := ReadNotCompletedTaskFromDB()
-	if err != nil {
-		return notExist, err
-	}
-	var deleteTask []string
-	for _, id := range ids {
-		if id-1 < len(tasks) {
-			deleteTask = append(deleteTask, tasks[id-1])
-		} else {
-			notExist = append(notExist, id-1)
+	if err == nil {
+		var deleteTask []string
+		for _, id := range ids {
+			if id-1 < len(tasks) {
+				deleteTask = append(deleteTask, tasks[id-1])
+			} else {
+				notExist = append(notExist, id-1)
+			}
+		}
+		for _, task := range deleteTask {
+			stmt, err := db.Prepare("delete from tasks where task=?")
+			if err == nil {
+				_, err = stmt.Exec(task)
+			}
 		}
 	}
-	for _, task := range deleteTask {
-		stmt, err := db.Prepare("delete from tasks where task=?")
-		if err != nil {
-			return notExist, err
-		}
-		_, err = stmt.Exec(task)
-		if err != nil {
-			return notExist, err
-		}
-	}
-	return notExist, nil
+	return notExist, err
 }

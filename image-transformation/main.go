@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -47,15 +46,16 @@ func index(w http.ResponseWriter, r *http.Request) {
 // and redirect to modify url
 func uploadHandle(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("image")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err == nil {
+		defer file.Close()
+		ext := filepath.Ext(header.Filename)[1:]
+		saveFile, err := tempfile("", ext)
+		if err == nil {
+			io.Copy(saveFile, file)
+			http.Redirect(w, r, "modify/"+filepath.Base(saveFile.Name()), http.StatusFound)
+		}
 	}
-	defer file.Close()
-	ext := filepath.Ext(header.Filename)[1:]
-	saveFile, err := tempfile("", ext)
-	io.Copy(saveFile, file)
-	http.Redirect(w, r, "modify/"+filepath.Base(saveFile.Name()), http.StatusFound)
-
+	errorResponse(w, err)
 }
 
 // modifyHandle is used for the show all the transformed image based on the query params
@@ -65,129 +65,137 @@ func uploadHandle(w http.ResponseWriter, r *http.Request) {
 // if mode and number of shapes is in url the it will show one image
 func modifyHandle(w http.ResponseWriter, r *http.Request) {
 	file, err := os.Open("./img/" + filepath.Base(r.URL.Path))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err == nil {
+		ext := filepath.Ext(file.Name())[1:]
+		mode := r.FormValue("mode")
+		if mode == "" {
+			renderAllMode(w, r, file, ext)
+			return
+		}
+		number := r.FormValue("number")
+		if number == "" {
+			renderSingleMode(w, r, file, ext, mode)
+			return
+		}
+		http.Redirect(w, r, "/img/"+filepath.Base(file.Name()), http.StatusFound)
 	}
-	ext := filepath.Ext(file.Name())[1:]
-	mode := r.FormValue("mode")
-	if mode == "" {
-		renderAllMode(w, r, file, ext)
-		return
-	}
-	number := r.FormValue("number")
-	if number == "" {
-		renderSingleMode(w, r, file, ext, mode)
-		return
-	}
-	http.Redirect(w, r, "/img/"+filepath.Base(file.Name()), http.StatusFound)
+	errorResponse(w, err)
 }
 
 // this function will generate three image with the same mode
 // but different number of shapes
 func renderSingleMode(w http.ResponseWriter, r *http.Request, file io.ReadSeeker, ext, mode string) {
-	a, err := genrateImage(file, ext, mode, "50")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	file.Seek(0, 0)
-	b, err := genrateImage(file, ext, mode, "100")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	file.Seek(0, 0)
-	c, err := genrateImage(file, ext, mode, "150")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	html := `<html><body>
-		{{range .}}
-			<a href="/modify/{{.Name}}?mode={{.Mode}}&number={{.Number}}">
-			<img style="width: 20%;" src="/{{.Name}}">
-			</a>
-		{{end}}
-		</body></html>`
-	tpl := template.Must(template.New("").Parse(html))
-	type Images struct {
-		Name   string
-		Mode   int
-		Number int
-	}
-	images := []Images{
-		{a, 2, 50}, {b, 2, 100}, {c, 2, 150},
-	}
+	var a, b, c string
+	var err error
+	a, err = genrateImage(file, ext, mode, "50")
+	if err == nil {
+		file.Seek(0, 0)
+		b, err = genrateImage(file, ext, mode, "100")
+		if err == nil {
+			file.Seek(0, 0)
+			c, err = genrateImage(file, ext, mode, "150")
+			if err == nil {
+				html := `<html><body>
+						{{range .}}
+							<a href="/modify/{{.Name}}?mode={{.Mode}}&number={{.Number}}">
+							<img style="width: 20%;" src="/{{.Name}}">
+							</a>
+						{{end}}
+						</body></html>`
+				tpl := template.Must(template.New("").Parse(html))
+				type Images struct {
+					Name   string
+					Mode   int
+					Number int
+				}
+				images := []Images{
+					{a, 2, 50}, {b, 2, 100}, {c, 2, 150},
+				}
 
-	tpl.Execute(w, images)
+				tpl.Execute(w, images)
+			}
+		}
+	}
 
 }
 
 // this funcion generate the four different images with differnt modes
 func renderAllMode(w http.ResponseWriter, r *http.Request, file io.ReadSeeker, ext string) {
-	a, err := genrateImage(file, ext, "2", "30")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	file.Seek(0, 0)
-	b, err := genrateImage(file, ext, "3", "30")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	file.Seek(0, 0)
-	c, err := genrateImage(file, ext, "4", "30")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	file.Seek(0, 0)
-	d, err := genrateImage(file, ext, "5", "30")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	file.Seek(0, 0)
-	html := `<html><body>
-			{{range .}}
-				<a href="/modify/{{.Name}}?mode={{.Mode}}">
-				<img style="width: 20%;" src="/{{.Name}}">
-				</a>
-			{{end}}
-			</body></html>`
-	tpl := template.Must(template.New("").Parse(html))
-	type Images struct {
-		Name string
-		Mode int
-	}
-	images := []Images{
-		{a, 2}, {b, 3}, {c, 4}, {d, 5},
+	var a, b, c, d string
+	var err error
+	a, err = genrateImage(file, ext, "2", "30")
+	if err == nil {
+		file.Seek(0, 0)
+		b, err = genrateImage(file, ext, "3", "30")
+		if err == nil {
+			file.Seek(0, 0)
+			c, err = genrateImage(file, ext, "4", "30")
+			if err == nil {
+				file.Seek(0, 0)
+				d, err = genrateImage(file, ext, "5", "30")
+				if err == nil {
+					file.Seek(0, 0)
+					html := `<html><body>
+					{{range .}}
+						<a href="/modify/{{.Name}}?mode={{.Mode}}">
+						<img style="width: 20%;" src="/{{.Name}}">
+						</a>
+					{{end}}
+					</body></html>`
+					tpl := template.Must(template.New("").Parse(html))
+					type Images struct {
+						Name string
+						Mode int
+					}
+					images := []Images{
+						{a, 2}, {b, 3}, {c, 4}, {d, 5},
+					}
+
+					tpl.Execute(w, images)
+				}
+			}
+		}
 	}
 
-	tpl.Execute(w, images)
+	errorResponse(w, err)
 }
 
 // this function call the transform function from transform package
 // to get trasform image
 func genrateImage(file io.Reader, ext, mode, number string) (string, error) {
-	out, err := transform.Transform(file, ext, mode, number)
-	outFile, err := tempfile("", ext)
-	if err != nil {
-		return "", err
+	var out io.Reader
+	var err error
+	var fileName string
+	out, err = transform.Transform(file, ext, mode, number)
+	if err == nil {
+		var outFile *os.File
+		outFile, err = tempfile("", ext)
+		if err == nil {
+			io.Copy(outFile, out)
+			fileName = outFile.Name()
+		}
 	}
-	io.Copy(outFile, out)
-	return outFile.Name(), nil
+
+	return fileName, nil
+}
+
+func errorResponse(w http.ResponseWriter, err error) {
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 // this function generate the temp file for us
 func tempfile(prefix, ext string) (*os.File, error) {
-	in, err := ioutil.TempFile("./img/", prefix)
-	if err != nil {
-		return nil, errors.New("primitive: failed to create temporary file")
+	var in, out *os.File
+	var err error
+	in, err = ioutil.TempFile("./img/", prefix)
+	if err == nil {
+		defer os.Remove(in.Name())
+		out, err = os.Create(fmt.Sprintf("%s.%s", in.Name(), ext))
 	}
-	defer os.Remove(in.Name())
-	return os.Create(fmt.Sprintf("%s.%s", in.Name(), ext))
+	return out, err
 }
 
 // getHandlers will return the router mux with handlers

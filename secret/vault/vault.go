@@ -42,16 +42,15 @@ func (v *Vault) reader(f io.Reader) error {
 
 func (v *Vault) save(key, value string) error {
 	f, err := os.OpenFile(v.filepath, os.O_RDWR|os.O_CREATE, 0755)
-	if err != nil {
-		return err
+	if err == nil {
+		defer f.Close()
+		hex, err := cipher.Encrypt(v.encodingKey, value)
+		if err == nil {
+			v.keyValues[key] = hex
+			err = v.writer(f)
+		}
 	}
-	defer f.Close()
-	hex, err := cipher.Encrypt(v.encodingKey, value)
-	if err != nil {
-		return err
-	}
-	v.keyValues[key] = hex
-	return v.writer(f)
+	return err
 }
 func (v *Vault) writer(f io.Writer) error {
 	enc := json.NewEncoder(f)
@@ -64,11 +63,7 @@ func (v *Vault) Set(key, value string) error {
 	v.mutex.Lock()
 	defer v.mutex.Unlock()
 	v.load()
-	err := v.save(key, value)
-	if err != nil {
-		return errors.New("Not able to save into file")
-	}
-	return nil
+	return v.save(key, value)
 }
 
 // Get function is used to get the value from secret file
@@ -84,9 +79,5 @@ func (v *Vault) Get(key string) (string, error) {
 	if ok != true {
 		return "", errors.New("Key not found")
 	}
-	value, err := cipher.Decrypt(v.encodingKey, hex)
-	if err != nil {
-		return "", errors.New("Not able to decrypt")
-	}
-	return value, nil
+	return cipher.Decrypt(v.encodingKey, hex)
 }

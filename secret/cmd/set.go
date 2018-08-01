@@ -14,10 +14,11 @@ var setCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		v := vault.GetVault(encodingKey, secretsPath())
 		err := v.Set(args[0], args[1])
-		if err != nil {
-			fmt.Printf("%v\n", err.Error())
+		msg := fmt.Sprint("Not able to save in file\n")
+		if err == nil {
+			msg = fmt.Sprint("saved key success")
 		}
-		fmt.Println("saved key success")
+		fmt.Println(msg)
 	},
 }
 
