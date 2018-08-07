@@ -1,0 +1,8 @@
+.vscode
+./CLI/task/main
+./image-transformation/main
+./recover/main
+./secret/main
+*.png
+! ./image-transformation/img/input.png
+! ./image-transformation/transform/input.png
