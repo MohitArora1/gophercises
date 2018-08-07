@@ -1,8 +1,17 @@
 # gophercises
-```
 gophercises is exercises for golang
-In this repository i am covering the gophsercises number 7 and 18
-
-```
 You can see all the exercises of gophercesis
 [gophsercises](https://gophercises.com/exercises)
+
+### CLI Task
+* CMD ![Coverage](./CLI/task/CMD/coverage.svg)
+* Repositry ![Coverage](./CLI/task/repository/coverage.svg)
+### Recover
+* Main ![Coverage](./recover/coverage.svg)
+### Secret
+* Cipher ![Coverage](./secret/cipher/coverage.svg)
+* CMD ![Coverage](./secret/cmd/coverage.svg)
+* Vault ![Coverage](./secret/vault/coverage.svg)
+### Image Transformation Service
+* Main ![Coverage](./image-transformation/coverage.svg)
+* Transform ![Coverage](./image-transformation/coverage.svg)

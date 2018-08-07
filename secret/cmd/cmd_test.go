@@ -63,6 +63,7 @@ func TestGet(t *testing.T) {
 	}{
 		{encodingKey: "123", key: "twitter", expected: "hello"},
 		{encodingKey: "123", key: "google", expected: "Key not found"},
+		{encodingKey: "123", key: "facebook", expected: "Key not found"},
 	}
 	for _, test := range testSuit {
 		encodingKey = test.encodingKey
