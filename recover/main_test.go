@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func GetTestHandler() http.HandlerFunc {
@@ -116,4 +117,15 @@ func TestPanic(t *testing.T) {
 	if res.StatusCode != http.StatusInternalServerError {
 		t.Errorf("not expected error in panic %v", res.StatusCode)
 	}
+}
+
+func TestMainFunc(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("Main panicked ??")
+		}
+	}()
+
+	go main()
+	time.Sleep(1 * time.Second)
 }

@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 )
 
 func getBody(t *testing.T) *bytes.Buffer {
@@ -148,4 +150,20 @@ func TestAPI2(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestErrorResponse(t *testing.T) {
+	w := httptest.NewRecorder()
+	err := errors.New("fake error")
+	errorResponse(w, err)
+}
+func TestMainFunc(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("Main panicked ??")
+		}
+	}()
+
+	go main()
+	time.Sleep(1 * time.Second)
 }
