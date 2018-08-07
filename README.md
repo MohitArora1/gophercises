@@ -17,4 +17,4 @@ You can see all the exercises of gophercesis
 
 ### Image Transformation Service
 * Main ![Coverage](./image-transformation/coverage.svg)
-* Transform ![Coverage](./image-transformation/coverage.svg)
+* Transform ![Coverage](./image-transformation/transform/coverage.svg)
